@@ -18,16 +18,20 @@ class MainViewModel(private val repository: AuthenticationRepository) {
     fun onSubmitClicked(email: String?, password: String?) {
         if (email.isNullOrEmpty())
         {
-            authenticationMutableLiveData.postValue(AuthenticationState.Error(EMPTY_EMAIL))
+            authenticationMutableLiveData.postValue(AuthenticationState.Error(EMPTY_PASSWORD))
         }
         else if (password.isNullOrEmpty())
         {
-            authenticationMutableLiveData.postValue(AuthenticationState.Error(EMPTY_PASSWORD))
+            authenticationMutableLiveData.postValue(AuthenticationState.Error(EMPTY_EMAIL))
         }
-        compositeDisposable.add(repository.authenticateUser(email,password)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ onSuccess(it) }) { onError(it) })
+        if(Utility.isValidUser() && MySingleton.isValidUser()) {
+            compositeDisposable.add(repository.authenticateUser(email, password)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ onSuccess(it) }) { onError(it) })
+        }else{
+            authenticationMutableLiveData.postValue(AuthenticationState.Error(EMPTY_EMAIL))
+        }
     }
 
     private fun onError(it: Throwable?) {

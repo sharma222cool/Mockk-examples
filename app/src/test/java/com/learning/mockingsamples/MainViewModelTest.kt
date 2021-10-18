@@ -2,11 +2,10 @@ package com.learning.mockingsamples
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.verify
 import io.reactivex.Single
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -37,8 +36,14 @@ class MainViewModelTest {
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
+        mockkObject(Utility, MySingleton)
         mainViewModel = MainViewModel(authenticationRepository)
         mainViewModel.authenticationLiveData.observeForever(authenticationStateObserver)
+    }
+
+    @After
+    fun after() {
+        unmockkObject(Utility, MySingleton)
     }
 
     @Test
@@ -47,6 +52,7 @@ class MainViewModelTest {
         val password: String? = null
 
         mainViewModel.onSubmitClicked(email, password)
+
         verify { authenticationStateObserver.onChanged(AuthenticationState.Error(EMPTY_EMAIL)) }
     }
 
@@ -66,6 +72,8 @@ class MainViewModelTest {
         val user = User("Mohit Sharma")
 
         every { authenticationRepository.authenticateUser(email, password) }.returns(Single.fromCallable { user })
+        every { Utility.isValidUser() }.returns(true)
+        every { MySingleton.isValidUser() }.returns(true)
 
         mainViewModel.onSubmitClicked(email, password)
 
