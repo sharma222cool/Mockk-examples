@@ -87,6 +87,8 @@ class MainViewModelTest {
         val user = User("Mohit Sharma")
         val exception = Throwable("Exception")
         every { authenticationRepository.authenticateUser(email, password) }.returns(Single.error { exception })
+        every { Utility.isValidUser() }.returns(true)
+        every { MySingleton.isValidUser() }.returns(true)
 
         mainViewModel.onSubmitClicked(email, password)
 
